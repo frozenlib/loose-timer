@@ -1,0 +1,16 @@
+[package]
+name = "loose-timer-macros"
+version = "0.1.0"
+edition = "2024"
+authors = ["frozenlib"]
+license = "MIT OR Apache-2.0"
+readme = "../README.md"
+
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "2.0.104"
+quote = "1.0.40"
+proc-macro2 = "1.0.95"
