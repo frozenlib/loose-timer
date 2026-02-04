@@ -7,9 +7,9 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/frozenlib/loose-timer"
 documentation = "https://docs.rs/loose-timer/"
-keywords = ["async"]
-categories = [""]
-description = ""
+keywords = ["async", "timer", "timeout", "test"]
+categories = ["asynchronous", "development-tools::testing"]
+description = "Runtime-agnostic asynchronous time utilities."
 # rust-version = ""
 
 
