@@ -15,52 +15,27 @@ pub fn timeout(attr: TokenStream, item: TokenStream) -> Result<TokenStream> {
     let is_async = func.sig.asyncness.is_some();
     let is_result = result_output(&func.sig.output).is_some();
 
-    let wrapped_block = match (is_async, is_result) {
-        (true, true) => quote!({
-            let __timeout_duration = ::loose_timer::IntoTimeoutDuration::into_timeout_duration(#duration_expr);
-            let __timeout_result =
-                ::loose_timer::timeout(__timeout_duration, async move #block).await;
-            match __timeout_result {
-                ::core::result::Result::Ok(value) => value,
-                ::core::result::Result::Err(err) => {
-                    return ::core::result::Result::Err(::core::convert::Into::into(err));
-                }
-            }
-        }),
-        (true, false) => quote!({
-            let __timeout_duration = ::loose_timer::IntoTimeoutDuration::into_timeout_duration(#duration_expr);
-            let __timeout_result =
-                ::loose_timer::timeout(__timeout_duration, async move #block).await;
-            match __timeout_result {
-                ::core::result::Result::Ok(value) => value,
-                ::core::result::Result::Err(_err) => {
-                    panic!("timeout");
-                }
-            }
-        }),
-        (false, true) => quote!({
-            let __timeout_duration = ::loose_timer::IntoTimeoutDuration::into_timeout_duration(#duration_expr);
-            let __timeout_result =
-                ::loose_timer::timeout_helpers::timeout_sync(move || #block, __timeout_duration);
-            match __timeout_result {
-                ::core::result::Result::Ok(value) => value,
-                ::core::result::Result::Err(err) => {
-                    return ::core::result::Result::Err(::core::convert::Into::into(err));
-                }
-            }
-        }),
-        (false, false) => quote!({
-            let __timeout_duration = ::loose_timer::IntoTimeoutDuration::into_timeout_duration(#duration_expr);
-            let __timeout_result =
-                ::loose_timer::timeout_helpers::timeout_sync(move || #block, __timeout_duration);
-            match __timeout_result {
-                ::core::result::Result::Ok(value) => value,
-                ::core::result::Result::Err(_err) => {
-                    panic!("timeout");
-                }
-            }
-        }),
+    let timeout_call = if is_async {
+        quote!(::loose_timer::timeout(__timeout_duration, async move #block).await)
+    } else {
+        quote!(::loose_timer::timeout_helpers::timeout_sync(move || #block, __timeout_duration))
     };
+    let timeout_err_pat = if is_result { quote!(err) } else { quote!(_err) };
+    let timeout_err_expr = if is_result {
+        quote!(return ::core::result::Result::Err(::core::convert::Into::into(err));)
+    } else {
+        quote!(panic!("timeout");)
+    };
+    let wrapped_block = quote!({
+        let __timeout_duration = ::loose_timer::IntoTimeoutDuration::into_timeout_duration(#duration_expr);
+        let __timeout_result = #timeout_call;
+        match __timeout_result {
+            ::core::result::Result::Ok(value) => value,
+            ::core::result::Result::Err(#timeout_err_pat) => {
+                #timeout_err_expr
+            }
+        }
+    });
 
     func.block = Box::new(parse_quote!(#wrapped_block));
     Ok(quote!(#func))
