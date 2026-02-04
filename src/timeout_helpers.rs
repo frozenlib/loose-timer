@@ -7,8 +7,7 @@ use futures::{future::Either, future::select, pin_mut};
 
 use super::{ShouldTimeoutError, TimeoutError, sleep, sleep_until};
 
-#[doc(hidden)]
-pub async fn with_should_timeout_async(
+pub async fn should_timeout(
     fut: impl Future<Output = ()>,
     duration: Duration,
 ) -> Result<(), ShouldTimeoutError> {
@@ -21,8 +20,7 @@ pub async fn with_should_timeout_async(
     }
 }
 
-#[doc(hidden)]
-pub async fn with_should_timeout_until_async(
+pub async fn should_timeout_until(
     fut: impl Future<Output = ()>,
     instant: Instant,
 ) -> Result<(), ShouldTimeoutError> {
@@ -35,16 +33,14 @@ pub async fn with_should_timeout_until_async(
     }
 }
 
-#[doc(hidden)]
-pub fn with_should_timeout(
+pub fn should_timeout_sync(
     f: impl FnOnce() + Send + 'static,
     duration: Duration,
 ) -> Result<(), ShouldTimeoutError> {
-    with_should_timeout_until(f, Instant::now() + duration)
+    should_timeout_until_sync(f, Instant::now() + duration)
 }
 
-#[doc(hidden)]
-pub fn with_should_timeout_until(
+pub fn should_timeout_until_sync(
     f: impl FnOnce() + Send + 'static,
     instant: Instant,
 ) -> Result<(), ShouldTimeoutError> {
@@ -61,7 +57,6 @@ pub fn with_should_timeout_until(
     }
 }
 
-#[doc(hidden)]
 pub fn timeout_sync<T: Send + 'static>(
     f: impl FnOnce() -> T + Send + 'static,
     duration: Duration,
@@ -69,7 +64,6 @@ pub fn timeout_sync<T: Send + 'static>(
     timeout_at_sync(f, Instant::now() + duration)
 }
 
-#[doc(hidden)]
 pub fn timeout_at_sync<T: Send + 'static>(
     f: impl FnOnce() -> T + Send + 'static,
     instant: Instant,

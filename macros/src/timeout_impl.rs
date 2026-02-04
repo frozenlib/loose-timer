@@ -85,10 +85,10 @@ pub fn should_timeout(attr: TokenStream, item: TokenStream) -> Result<TokenStrea
     };
     let should_timeout_call = if is_async {
         quote!(
-            ::loose_timer::timeout_helpers::with_should_timeout_async(#timeout_body, __timeout_duration).await
+            ::loose_timer::timeout_helpers::should_timeout(#timeout_body, __timeout_duration).await
         )
     } else {
-        quote!(::loose_timer::timeout_helpers::with_should_timeout(#timeout_body, __timeout_duration))
+        quote!(::loose_timer::timeout_helpers::should_timeout_sync(#timeout_body, __timeout_duration))
     };
     let timeout_result_arms = if is_result {
         quote! {
