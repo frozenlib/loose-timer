@@ -1,0 +1,5 @@
+error: duration must be non-negative and finite
+ --> tests/compile_fail/timeout/negative_value.rs:3:11
+  |
+3 | #[timeout("-1s")]
+  |           ^^^^^

@@ -22,6 +22,7 @@ parse-display = "0.10.0"
 pretty_assertions = "1.4.1"
 assert-call = "0.1.2"
 futures = "0.3.31"
+trybuild = "1.0.105"
 
 [workspace]
 members = ["macros"]

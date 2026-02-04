@@ -1,0 +1,5 @@
+error: invalid duration literal
+ --> tests/compile_fail/timeout/invalid_suffix.rs:3:11
+  |
+3 | #[timeout("1h")]
+  |           ^^^^
