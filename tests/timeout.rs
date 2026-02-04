@@ -89,6 +89,17 @@ fn timeout_accepts_string_expr() {
 }
 
 #[test]
+fn timeout_accepts_string_argument() {
+    #[timeout("50ms")]
+    async fn echo(value: String) -> Result<String, TimeoutError> {
+        Ok(value)
+    }
+
+    let value = block_on(echo("hello".to_string())).unwrap();
+    assert_eq!(value, "hello");
+}
+
+#[test]
 #[should_panic]
 fn timeout_panics_for_non_result() {
     #[timeout("10ms")]
@@ -121,6 +132,17 @@ fn sync_timeout_returns_timeout_error_for_result() {
 
     let result = timeout_result();
     assert!(result.is_err());
+}
+
+#[test]
+fn sync_timeout_accepts_string_argument() {
+    #[timeout("50ms")]
+    fn echo(value: String) -> Result<String, TimeoutError> {
+        Ok(value)
+    }
+
+    let value = echo("hello".to_string()).unwrap();
+    assert_eq!(value, "hello");
 }
 
 #[test]

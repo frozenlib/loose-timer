@@ -61,6 +61,19 @@ fn should_timeout_allows_non_result_after_timeout() {
 }
 
 #[test]
+fn should_timeout_accepts_string_argument() {
+    #[should_timeout("10ms")]
+    async fn slow_with_arg(value: String) -> Result<(), ShouldTimeoutError> {
+        sleep(Duration::from_millis(30)).await;
+        let _ = value;
+        Ok::<(), ShouldTimeoutError>(())
+    }
+
+    block_on(slow_with_arg("hello".to_string())).unwrap();
+    assert_eq!((), ());
+}
+
+#[test]
 fn sync_should_timeout_returns_ok_after_timeout_for_result() {
     #[should_timeout("10ms")]
     fn slow_result() -> Result<(), ShouldTimeoutError> {
@@ -69,6 +82,19 @@ fn sync_should_timeout_returns_ok_after_timeout_for_result() {
     }
 
     slow_result().unwrap();
+    assert_eq!((), ());
+}
+
+#[test]
+fn sync_should_timeout_accepts_string_argument() {
+    #[should_timeout("10ms")]
+    fn slow_with_arg(value: String) -> Result<(), ShouldTimeoutError> {
+        std::thread::sleep(Duration::from_millis(30));
+        let _ = value;
+        Ok::<(), ShouldTimeoutError>(())
+    }
+
+    slow_with_arg("hello".to_string()).unwrap();
     assert_eq!((), ());
 }
 
