@@ -8,8 +8,7 @@ Runtime-agnostic asynchronous time utilities.
 
 ## Key Features
 
-- `sleep`: asynchronous version of [`std::thread::sleep`]
-- `sleep_until`: asynchronous version of [`std::thread::sleep_until`]
+- `sleep`, `sleep_until`: asynchronous versions of [`std::thread::sleep`], [`std::thread::sleep_until`]
 - `timeout`, `timeout_at`: functions to apply timeouts to [`Future`]
 - `#[timeout]`: attribute to add timeouts to test functions (works for both sync and async functions)
 - `#[should_timeout]`: attribute for tests that succeed when they time out

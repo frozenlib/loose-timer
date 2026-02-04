@@ -8,8 +8,7 @@
 
 ## 主な機能
 
-- `sleep`: 非同期版の [`std::thread::sleep`]
-- `sleep_until`: 非同期版の [`std::thread::sleep_until`]
+- `sleep`, `sleep_until`: 非同期版の [`std::thread::sleep`], [`std::thread::sleep_until`]
 - `timeout`, `timeout_at`: [`Future`]をタイムアウト付きにする関数
 - `#[timeout]`: テスト関数タイムアウト付きにする属性（同期関数、非同期関数のどちらにも指定可能）
 - `#[should_timeout]`: タイムアウトすると成功するテストに付ける属性
