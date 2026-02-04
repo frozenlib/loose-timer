@@ -2,15 +2,13 @@
 
 use std::{
     collections::BTreeMap,
-    future::{Future, IntoFuture},
-    pin::Pin,
+    future::{Future, IntoFuture, poll_fn},
+    pin::{Pin, pin},
     sync::{Condvar, LazyLock, Mutex},
     task::{Context, Poll, Waker},
     time::{Duration, Instant},
 };
 
-use futures::future::select;
-use futures::{future::Either, pin_mut};
 use parse_display::Display;
 use slabmap::SlabMap;
 
@@ -244,28 +242,36 @@ pub async fn timeout<T>(
     duration: Duration,
     fut: impl IntoFuture<Output = T>,
 ) -> Result<T, TimeoutError> {
-    let timeout = sleep(duration);
-    let fut = fut.into_future();
-    pin_mut!(fut);
-    pin_mut!(timeout);
-    match select(fut, timeout).await {
-        Either::Left((value, _)) => Ok(value),
-        Either::Right((_, _)) => Err(TimeoutError::new()),
-    }
+    let mut fut = pin!(fut.into_future());
+    let mut timeout = pin!(sleep(duration));
+    poll_fn(|cx| {
+        if let Poll::Ready(value) = fut.as_mut().poll(cx) {
+            Poll::Ready(Ok(value))
+        } else if timeout.as_mut().poll(cx).is_ready() {
+            Poll::Ready(Err(TimeoutError::new()))
+        } else {
+            Poll::Pending
+        }
+    })
+    .await
 }
 /// Runs a future with a timeout deadline.
 pub async fn timeout_at<T>(
     deadline: Instant,
     fut: impl IntoFuture<Output = T>,
 ) -> Result<T, TimeoutError> {
-    let timeout = sleep_until(deadline);
-    let fut = fut.into_future();
-    pin_mut!(fut);
-    pin_mut!(timeout);
-    match select(fut, timeout).await {
-        Either::Left((value, _)) => Ok(value),
-        Either::Right((_, _)) => Err(TimeoutError::new()),
-    }
+    let mut fut = pin!(fut.into_future());
+    let mut timeout = pin!(sleep_until(deadline));
+    poll_fn(|cx| {
+        if let Poll::Ready(value) = fut.as_mut().poll(cx) {
+            Poll::Ready(Ok(value))
+        } else if timeout.as_mut().poll(cx).is_ready() {
+            Poll::Ready(Err(TimeoutError::new()))
+        } else {
+            Poll::Pending
+        }
+    })
+    .await
 }
 
 /// Values that can be converted to a `Duration` for timeouts.

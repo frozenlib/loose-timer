@@ -8,6 +8,7 @@ use std::{
 };
 
 use assert_call::{Call, CallRecorder, call};
+use futures::executor::block_on;
 use pretty_assertions::assert_eq;
 
 use super::*;
@@ -33,7 +34,7 @@ fn poll_future(fut: Pin<&mut impl Future<Output = ()>>, waker: &Waker) -> Poll<(
 #[test]
 fn sleep_completes_after_duration() {
     let start = Instant::now();
-    futures::executor::block_on(sleep(Duration::from_millis(20)));
+    block_on(sleep(Duration::from_millis(20)));
     assert!(start.elapsed() >= Duration::from_millis(15));
 }
 
@@ -150,7 +151,7 @@ fn concurrent_sleep_until_does_not_deadlock() {
     let handles: Vec<_> = (0..4)
         .map(|i| {
             thread::spawn(move || {
-                futures::executor::block_on(sleep_until(base + Duration::from_millis(i * 5)));
+                block_on(sleep_until(base + Duration::from_millis(i * 5)));
             })
         })
         .collect();

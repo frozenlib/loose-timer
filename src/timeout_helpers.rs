@@ -1,9 +1,9 @@
 use std::{
-    future::Future,
+    future::{Future, poll_fn},
+    pin::pin,
+    task::Poll,
     time::{Duration, Instant},
 };
-
-use futures::{future::Either, future::select, pin_mut};
 
 use super::{ShouldTimeoutError, TimeoutError, sleep, sleep_until};
 
@@ -11,26 +11,36 @@ pub async fn should_timeout(
     fut: impl Future<Output = ()>,
     duration: Duration,
 ) -> Result<(), ShouldTimeoutError> {
-    let timeout = sleep(duration);
-    pin_mut!(fut);
-    pin_mut!(timeout);
-    match select(fut, timeout).await {
-        Either::Left(((), _)) => Err(ShouldTimeoutError::new()),
-        Either::Right(((), _fut)) => Ok(()),
-    }
+    let mut fut = pin!(fut);
+    let mut timeout = pin!(sleep(duration));
+    poll_fn(|cx| {
+        if fut.as_mut().poll(cx).is_ready() {
+            Poll::Ready(Err(ShouldTimeoutError::new()))
+        } else if timeout.as_mut().poll(cx).is_ready() {
+            Poll::Ready(Ok(()))
+        } else {
+            Poll::Pending
+        }
+    })
+    .await
 }
 
 pub async fn should_timeout_until(
     fut: impl Future<Output = ()>,
     instant: Instant,
 ) -> Result<(), ShouldTimeoutError> {
-    let timeout = sleep_until(instant);
-    pin_mut!(fut);
-    pin_mut!(timeout);
-    match select(fut, timeout).await {
-        Either::Left(((), _)) => Err(ShouldTimeoutError::new()),
-        Either::Right(((), _fut)) => Ok(()),
-    }
+    let mut fut = pin!(fut);
+    let mut timeout = pin!(sleep_until(instant));
+    poll_fn(|cx| {
+        if fut.as_mut().poll(cx).is_ready() {
+            Poll::Ready(Err(ShouldTimeoutError::new()))
+        } else if timeout.as_mut().poll(cx).is_ready() {
+            Poll::Ready(Ok(()))
+        } else {
+            Poll::Pending
+        }
+    })
+    .await
 }
 
 pub fn should_timeout_sync(
