@@ -211,16 +211,15 @@ fn is_unit_type(ty: &Type) -> bool {
 
 fn parse_duration_literal(lit: &LitStr) -> Result<TokenStream> {
     let raw = lit.value();
-    let s = raw.trim();
-    if s.is_empty() {
+    if raw.is_empty() {
         bail!(lit.span(), "duration literal is empty");
     }
 
-    let (number, unit) = if let Some(prefix) = s.strip_suffix("ms") {
+    let (number, unit) = if let Some(prefix) = raw.strip_suffix("ms") {
         (prefix, "ms")
-    } else if let Some(prefix) = s.strip_suffix('s') {
+    } else if let Some(prefix) = raw.strip_suffix('s') {
         (prefix, "s")
-    } else if let Some(prefix) = s.strip_suffix('m') {
+    } else if let Some(prefix) = raw.strip_suffix('m') {
         (prefix, "m")
     } else {
         bail!(lit.span(), "invalid duration literal");

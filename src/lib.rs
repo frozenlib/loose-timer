@@ -271,7 +271,7 @@ pub async fn timeout_at<T>(
 /// Values that can be converted to a `Duration` for timeouts.
 ///
 /// Strings use the "number + suffix" format (e.g., `"250ms"`, `"1s"`, `"1.5m"`).
-/// Leading/trailing whitespace is ignored, and only finite values >= 0 are allowed.
+/// Only finite values >= 0 are allowed.
 ///
 /// | Suffix | Equivalent to                      |
 /// |--------|----------------------------------- |
@@ -315,16 +315,15 @@ impl std::fmt::Display for ParseTimeoutDurationError {
 }
 
 fn parse_timeout_duration_str(raw: &str) -> Result<Duration, ParseTimeoutDurationError> {
-    let s = raw.trim();
-    if s.is_empty() {
+    if raw.is_empty() {
         return Err(ParseTimeoutDurationError("duration literal is empty"));
     }
 
-    let (number, unit) = if let Some(prefix) = s.strip_suffix("ms") {
+    let (number, unit) = if let Some(prefix) = raw.strip_suffix("ms") {
         (prefix, "ms")
-    } else if let Some(prefix) = s.strip_suffix('s') {
+    } else if let Some(prefix) = raw.strip_suffix('s') {
         (prefix, "s")
-    } else if let Some(prefix) = s.strip_suffix('m') {
+    } else if let Some(prefix) = raw.strip_suffix('m') {
         (prefix, "m")
     } else {
         return Err(ParseTimeoutDurationError("invalid duration literal"));
