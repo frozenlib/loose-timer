@@ -1,0 +1,13 @@
+error[E0277]: the trait bound `NotConvertible: From<ShouldTimeoutError>` is not satisfied
+  --> tests/compile_fail/timeout/should_timeout_error_not_convertible_sync.rs:5:1
+   |
+ 5 | #[should_timeout("10ms")]
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+   |
+help: the trait `From<ShouldTimeoutError>` is not implemented for `NotConvertible`
+  --> tests/compile_fail/timeout/should_timeout_error_not_convertible_sync.rs:12:1
+   |
+12 | struct NotConvertible;
+   | ^^^^^^^^^^^^^^^^^^^^^
+   = note: required for `ShouldTimeoutError` to implement `Into<NotConvertible>`
+   = note: this error originates in the attribute macro `should_timeout` (in Nightly builds, run with -Z macro-backtrace for more info)
