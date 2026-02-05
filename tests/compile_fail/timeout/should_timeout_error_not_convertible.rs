@@ -5,7 +5,7 @@ use loose_timer::{should_timeout, sleep};
 #[should_timeout("10ms")]
 async fn should_timeout_result() -> Result<(), NotConvertible> {
     sleep(Duration::from_millis(20)).await;
-    Ok(())
+    Ok::<(), NotConvertible>(())
 }
 
 #[derive(Debug)]

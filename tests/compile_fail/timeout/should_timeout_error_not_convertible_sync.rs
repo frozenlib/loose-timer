@@ -5,7 +5,7 @@ use loose_timer::should_timeout;
 #[should_timeout("10ms")]
 fn should_timeout_result() -> Result<(), NotConvertible> {
     std::thread::sleep(Duration::from_millis(20));
-    Ok(())
+    Ok::<(), NotConvertible>(())
 }
 
 #[derive(Debug)]

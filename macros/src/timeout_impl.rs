@@ -3,7 +3,8 @@ use quote::quote;
 use syn::{
     Expr, GenericArgument, ItemFn, Lit, LitFloat, LitStr, PathArguments, Result, ReturnType, Type,
     parse::{Parse, ParseStream},
-    parse_quote, parse2,
+    parse_quote, parse_quote_spanned, parse2,
+    spanned::Spanned,
 };
 
 pub fn timeout(attr: TokenStream, item: TokenStream) -> Result<TokenStream> {
@@ -11,9 +12,14 @@ pub fn timeout(attr: TokenStream, item: TokenStream) -> Result<TokenStream> {
     let mut func: ItemFn = parse2(item)?;
 
     let duration_expr = attr.into_duration_expr()?;
-    let block = func.block;
     let is_async = func.sig.asyncness.is_some();
-    let is_result = result_output(&func.sig.output).is_some();
+    let result_output = result_output(&func.sig.output);
+    let is_result = result_output.is_some();
+    let err_ty = result_output.as_ref().map(|(_, err)| (*err).clone());
+    if let Some(err_ty) = err_ty {
+        add_error_bound(&mut func, &err_ty, quote!(::loose_timer::TimeoutError));
+    }
+    let block = func.block;
 
     let timeout_call = if is_async {
         quote!(::loose_timer::timeout(__timeout_duration, async move #block).await)
@@ -46,18 +52,26 @@ pub fn should_timeout(attr: TokenStream, item: TokenStream) -> Result<TokenStrea
     let mut func: ItemFn = parse2(item)?;
 
     let duration_expr = attr.into_duration_expr()?;
-    let block = func.block;
     let is_async = func.sig.asyncness.is_some();
-    let output = &func.sig.output;
-    let result_output = result_output(output);
+    let output = func.sig.output.clone();
+    let result_output = result_output(&output);
     let is_result = result_output.is_some();
+    let err_ty = result_output.as_ref().map(|(_, err)| (*err).clone());
+    if let Some(err_ty) = err_ty {
+        add_error_bound(
+            &mut func,
+            &err_ty,
+            quote!(::loose_timer::ShouldTimeoutError),
+        );
+    }
     let ok_is_unit = match result_output {
         Some((ok, _)) => is_unit_type(ok),
         None => {
             matches!(output, ReturnType::Default)
-                || matches!(output, ReturnType::Type(_, ty) if is_unit_type(ty))
+                || matches!(output, ReturnType::Type(_, ty) if is_unit_type(&ty))
         }
     };
+    let block = func.block;
     if !ok_is_unit {
         bail!(
             Span::call_site(),
@@ -115,6 +129,17 @@ pub fn should_timeout(attr: TokenStream, item: TokenStream) -> Result<TokenStrea
 
     func.block = Box::new(parse_quote!(#wrapped_block));
     Ok(quote!(#func))
+}
+
+fn add_error_bound(func: &mut ItemFn, err: &Type, error: TokenStream) {
+    let predicate = parse_quote_spanned!(
+        err.span() => #err: ::core::convert::From<#error>
+    );
+    func.sig
+        .generics
+        .make_where_clause()
+        .predicates
+        .push(predicate);
 }
 
 struct TimeoutArgs {

@@ -1,13 +1,29 @@
 error[E0277]: the trait bound `NotConvertible: From<TimeoutError>` is not satisfied
-  --> tests/compile_fail/timeout/result_error_not_convertible.rs:5:1
+  --> tests/compile_fail/timeout/result_error_not_convertible.rs:6:41
    |
- 5 | #[timeout("10ms")]
-   | ^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+ 6 | async fn timeout_result() -> Result<(), NotConvertible> {
+   |                                         ^^^^^^^^^^^^^^ unsatisfied trait bound
    |
 help: the trait `From<TimeoutError>` is not implemented for `NotConvertible`
   --> tests/compile_fail/timeout/result_error_not_convertible.rs:12:1
    |
 12 | struct NotConvertible;
    | ^^^^^^^^^^^^^^^^^^^^^
-   = note: required for `TimeoutError` to implement `Into<NotConvertible>`
-   = note: this error originates in the attribute macro `timeout` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = help: see issue #48214
+
+error[E0277]: the trait bound `NotConvertible: From<TimeoutError>` is not satisfied
+  --> tests/compile_fail/timeout/result_error_not_convertible.rs:15:13
+   |
+15 |     let _ = timeout_result();
+   |             ^^^^^^^^^^^^^^^^ unsatisfied trait bound
+   |
+help: the trait `From<TimeoutError>` is not implemented for `NotConvertible`
+  --> tests/compile_fail/timeout/result_error_not_convertible.rs:12:1
+   |
+12 | struct NotConvertible;
+   | ^^^^^^^^^^^^^^^^^^^^^
+note: required by a bound in `timeout_result`
+  --> tests/compile_fail/timeout/result_error_not_convertible.rs:6:41
+   |
+ 6 | async fn timeout_result() -> Result<(), NotConvertible> {
+   |                                         ^^^^^^^^^^^^^^ required by this bound in `timeout_result`

@@ -1,8 +1,8 @@
 use std::time::Duration;
 
 use futures::executor::block_on;
-use pretty_assertions::assert_eq;
 use loose_timer::{ShouldTimeoutError, should_timeout, sleep};
+use pretty_assertions::assert_eq;
 
 #[test]
 fn should_timeout_returns_ok_after_timeout_for_result() {
