@@ -1,6 +1,6 @@
 [package]
 name = "loose-timer"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2024"
 authors = ["frozenlib"]
 license = "MIT OR Apache-2.0"
@@ -14,7 +14,7 @@ description = "Runtime-agnostic asynchronous time utilities."
 
 
 [dependencies]
-loose-timer-macros = { path = "macros" }
+loose-timer-macros = { version = "0.0.1", path = "macros" }
 slabmap = "0.2.1"
 parse-display = "0.10.0"
 
