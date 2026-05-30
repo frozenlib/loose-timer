@@ -209,9 +209,7 @@
       "args": [
         "test",
         "--test",
-        "compile_fail",
-        "--",
-        "--ignored"
+        "compile_fail"
       ],
       "problemMatcher": [
         "$rustc"

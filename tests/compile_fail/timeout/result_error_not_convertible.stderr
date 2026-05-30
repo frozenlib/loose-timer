@@ -9,7 +9,6 @@ help: the trait `From<TimeoutError>` is not implemented for `NotConvertible`
    |
 12 | struct NotConvertible;
    | ^^^^^^^^^^^^^^^^^^^^^
-   = help: see issue #48214
 
 error[E0277]: the trait bound `NotConvertible: From<TimeoutError>` is not satisfied
   --> tests/compile_fail/timeout/result_error_not_convertible.rs:15:13
